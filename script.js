@@ -1,5 +1,7 @@
 const LEAD_ENDPOINT = 'https://lead-relay.leestygpt.workers.dev/lead/9MJ4ZVXQWJ';
-const TG_LINK = 'https://t.me/artamonova_kristina58'; // заглушка: бот-тест переносится на аккаунт клиента, пока ведём в личный Telegram
+// Ссылка на бота-тест (с меткой источника ?start=...). Пока пусто: кнопка ведёт к форме заявки.
+const BOT_LINK = '';
+const TG_LINK = 'https://t.me/artamonova_kristina58'; // резерв только для отправки заявки, если форма недоступна
 (() => {
   const root = document.documentElement;
   root.classList.add('js');
@@ -85,67 +87,34 @@ const TG_LINK = 'https://t.me/artamonova_kristina58'; // заглушка: бо�
   // ===== picker =====
   safe(() => {
     const data = {
-      none: ['Нет заявок', 'Начните с аудита Директа', 'от 15 000 ₽', 'Если реклама уже идёт, но заявок нет, сначала разберём кампании и Метрику: часто причина в запросах, целях или странице. Если рекламы ещё нет, запустим Директ от 25 000 ₽.', 'Аудит Директа'],
-      dear: ['Дорогие заявки', 'Аудит, потом ведение', 'от 15 000 ₽', 'Дорогая заявка обычно значит, что часть бюджета уходит на лишние запросы и показы. Аудит покажет где, а ведение от 25 000 ₽ закрепит правки.', 'Аудит Директа'],
-      site: ['Нужен сайт', 'Сайт или интернет-магазин', 'от 20 000 ₽', 'Соберём страницу или магазин, который ведёт к заявке. Если планируется реклама, сразу заложим цели в Метрике.', 'Сайт или интернет-магазин'],
-      promo: ['Нужно продвижение', 'Директ для быстрого старта', 'от 25 000 ₽', 'Реклама в Директе даёт обращения быстрее. SEO работает дольше, от 40 000 ₽ без верстки и бюджета на ссылки. Выберем связку под вашу нишу.', 'Яндекс Директ: настройка и ведение'],
-      plan: ['Нужна стратегия', 'Маркетолог', 'от 65 000 ₽', 'Консультация, маркетинговый план на месяц, стратегия бизнеса или запуск бренда под ключ. Подходит, когда непонятно, куда вкладывать бюджет.', 'Услуги маркетолога']
+      launch: ['Подготовим первый запуск', 'Посмотрим, что вы продаёте, кто ваши клиенты и куда вести людей из объявления. Предложим, с какого канала начать, что рекламировать в первую очередь и как считать заявки после запуска.', 'Настройка и ведение Яндекс Директа · от 25 000 ₽', 'Обсудить запуск', 'Яндекс Директ: настройка и ведение'],
+      audit: ['Разберём, куда уходит рекламный бюджет', 'Если заявки редкие, дорогие или приходят от людей, которым не подходит ваше предложение, проверим кампании, Метрику и страницу, на которую ведёт реклама. После аудита у вас будет список правок в порядке приоритета. Его можно передать своему специалисту.', 'Аудит Директа · от 15 000 ₽', 'Обсудить аудит', 'Аудит Директа'],
+      site: ['Сделаем сайт под вашу задачу', 'Если вы запускаете рекламу на одну услугу, сделаем страницу, где клиент сможет разобраться в предложении и оставить заявку. Если продаёте товары, соберём магазин с каталогом, карточками и оформлением заказа.', 'Разработка сайта · от 20 000 ₽', 'Обсудить сайт', 'Сайт или интернет-магазин'],
+      seo: ['Продвинем сайт по запросам ваших клиентов', 'Проверим, по каким запросам покупатели ищут ваши товары и услуги. Доработаем тексты и страницы, чтобы сайт чаще находили в Яндексе и Google, а посетителям было проще оставить заявку. Подготовим контент для нейроответов.', 'SEO-продвижение · от 40 000 ₽', 'Обсудить SEO', 'SEO-продвижение'],
+      plan: ['Разберёмся, что стоит делать в первую очередь', 'Маркетолог посмотрит, откуда к вам сейчас приходят клиенты, что вы уже пробовали и как ваше предложение выглядит рядом с конкурентами. По итогам можно составить план на ближайший месяц с конкретными задачами, бюджетом и показателями для проверки.', 'Услуги маркетолога · от 65 000 ₽', 'Обсудить план продвижения', 'Услуги маркетолога']
     };
     const box = $('#answer'), chips = $$('#chips .chip');
     chips.forEach(c => c.addEventListener('click', () => {
       chips.forEach(x => x.setAttribute('aria-pressed', x === c ? 'true' : 'false'));
-      const [, h, price, txt, svc] = data[c.dataset.k];
+      const [h, txt, svcLine, btn, svc] = data[c.dataset.k];
       box.textContent = '';
       const mk = (tag, cls, t) => { const e = document.createElement(tag); if (cls) e.className = cls; e.textContent = t; return e; };
-      const a = mk('a', 'btn', 'Обсудить это'); a.href = '#form'; a.dataset.svc = svc;
-      a.addEventListener('click', () => { const s = $('#svc'); if (s) s.value = svc; });
-      box.append(mk('span', 'hand', 'Фломик советует: ' + price), mk('h3', '', h), mk('p', '', txt), a);
+      const a = mk('a', 'btn', btn); a.href = '#form'; a.dataset.svc = svc;
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const s = $('#svc'); if (s) s.value = svc;
+        scrollTo({ top: $('#form').getBoundingClientRect().top + scrollY - 56, behavior: reduce ? 'auto' : 'smooth' });
+      });
+      box.append(mk('h3', '', h), mk('p', '', txt), mk('div', 'svcline', svcLine), a);
       box.classList.remove('swap'); void box.offsetWidth; box.classList.add('swap');
-      a.addEventListener('click', e => { e.preventDefault(); scrollTo({ top: $('#form').getBoundingClientRect().top + scrollY - 56, behavior: reduce ? 'auto' : 'smooth' }); });
     }));
   });
 
-  // ===== quiz =====
+  // ===== bot button =====
   safe(() => {
-    const Q = [
-      ['Реклама ведёт на главную страницу сайта, а не на страницу под конкретный запрос', 'объявления ведут на главную, а не на страницу под запрос'],
-      ['Минус-слов нет или их не обновляли больше месяца', 'нет свежих минус-слов, и показы идут по лишним запросам'],
-      ['В Метрике не настроены цели, и непонятно, какое объявление принесло заявку', 'нет целей в Метрике, поэтому нельзя понять, что работает'],
-      ['Поиск и рекламная сеть сидят в одной кампании с общим бюджетом', 'поиск и сети смешаны, бюджет делится вслепую'],
-      ['Вы платите за клики, но не смотрите, по каким именно запросам показывается реклама', 'не просматриваются поисковые запросы, по которым идут показы'],
-      ['Автоматические ставки включили сразу, без целей и накопленных данных', 'автоматика включена без целей и данных, учится на вашем бюджете']
-    ];
-    const qq = $('#qq'), qa = $('#qa'), dots = $('#dots'), quiz = $('#quiz');
-    let i = 0, traps = [];
-    const mk = (tag, cls, t) => { const e = document.createElement(tag); if (cls) e.className = cls; if (t) e.textContent = t; return e; };
-    const reset = () => { i = 0; traps = []; dots.textContent = ''; Q.forEach(() => dots.append(mk('i'))); quiz.classList.remove('res'); dots.style.display = ''; show(); };
-    const show = () => {
-      $$('i', dots).forEach((d, k) => d.classList.toggle('on', k <= i));
-      qq.textContent = (i + 1) + ' из ' + Q.length + '. Бывает так: ' + Q[i][0].charAt(0).toLowerCase() + Q[i][0].slice(1) + '?';
-      qa.textContent = '';
-      [['Да', 1], ['Нет', 0], ['Не знаю', 1]].forEach(([t, bad]) => {
-        const b = mk('button', '', t); b.type = 'button';
-        b.addEventListener('click', () => { if (bad) traps.push(Q[i][1]); i++; i < Q.length ? show() : finish(); });
-        qa.append(b);
-      });
-    };
-    const finish = () => {
-      const n = traps.length;
-      dots.style.display = 'none'; quiz.classList.add('res');
-      const title = n <= 1 ? 'Почти чисто' : n <= 3 ? 'Есть что вычёркивать' : 'Фломику понадобится второй маркер';
-      qq.textContent = ''; qq.style.minHeight = '0'; qa.textContent = '';
-      const wrap = mk('div', 'res');
-      wrap.append(mk('span', 'hand', 'Ловушек отмечено: ' + n + ' из ' + Q.length), mk('h3', '', title));
-      if (n) { const ul = mk('ul'); traps.forEach(t => { const li = mk('li'); li.append(mk('s', '', t)); ul.append(li); }); wrap.append(ul); }
-      else wrap.append(mk('p', '', 'Основные ловушки обойдены. Аудит всё равно может найти тонкие места, но срочных дыр не видно.'));
-      const cta = mk('div', 'res__cta');
-      const g = mk('a', 'btn', 'Получить гайд в Telegram'); g.href = TG_LINK + '?text=' + encodeURIComponent('Здравствуйте! Прошёл тест про ловушки рекламы в Директе (' + n + ' из ' + Q.length + '). Хочу гайд.'); g.target = '_blank'; g.rel = 'noopener';
-      const a = mk('a', 'btn btn--ghost', 'Разобрать мой кабинет'); a.href = '#form';
-      a.addEventListener('click', e => { e.preventDefault(); const s = $('#svc'); if (s) s.value = 'Аудит Директа'; scrollTo({ top: $('#form').getBoundingClientRect().top + scrollY - 56, behavior: reduce ? 'auto' : 'smooth' }); });
-      const again = mk('button', 'btn btn--ghost', 'Пройти заново'); again.type = 'button'; again.addEventListener('click', () => { qq.style.minHeight = ''; wrap.remove(); reset(); });
-      cta.append(g, a, again); wrap.append(cta); quiz.append(wrap);
-    };
-    reset();
+    const b = $('#botBtn'); if (!b) return;
+    if (BOT_LINK) { b.href = BOT_LINK; b.target = '_blank'; b.rel = 'noopener'; return; }
+    b.addEventListener('click', e => { e.preventDefault(); const s = $('#svc'); if (s) s.value = 'Аудит Директа'; scrollTo({ top: $('#form').getBoundingClientRect().top + scrollY - 56, behavior: reduce ? 'auto' : 'smooth' }); });
   });
 
   // ===== form =====
