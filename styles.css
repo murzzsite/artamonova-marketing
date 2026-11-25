@@ -224,4 +224,3 @@ footer a{color:var(--ink)}
   .strike::after,.chip::after,.shot img,.lead,.row__img{transition:none}
   .answer.swap{animation:none}
 }
-.row__img[src*="ad-city"],.row__img[src*="seo"],.row__img[src*="landing"]{object-position:100% 30%}

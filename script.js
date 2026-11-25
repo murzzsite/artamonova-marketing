@@ -1,6 +1,6 @@
 const LEAD_ENDPOINT = 'https://lead-relay.leestygpt.workers.dev/lead/9MJ4ZVXQWJ';
 // Ссылка на бота-тест (с меткой источника ?start=...). Пока пусто: кнопка ведёт к форме заявки.
-const BOT_LINK = '';
+const BOT_LINK = 'https://t.me/marketing_flom_bot?start=website_test';
 const TG_LINK = 'https://t.me/artamonova_kristina58'; // резерв только для отправки заявки, если форма недоступна
 (() => {
   const root = document.documentElement;
